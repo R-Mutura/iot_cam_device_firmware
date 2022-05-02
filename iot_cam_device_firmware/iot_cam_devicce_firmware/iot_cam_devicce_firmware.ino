@@ -12,7 +12,7 @@
 #include "ArduinoJson.h"
 #include <Arduino.h>
 #include <MFRC522.h>
-
+//#include <TJpg_Decoder.h>
 
 
 
@@ -36,18 +36,20 @@
  // char  packetBuffer[100];
 MFRC522 rfid(SS_PIN);
 
-
+int go_on =0;
 
 int   readrfid    ();
 int   getlevel    ();
 float getweight   ();
+
+uint16_t imgWidth, imgHeight;//spiffsFilename;
 
 //#define MOSI 19
 //#define MISO 23
 //#define SCK  18
 //#define SS   5
 
-char server[] = "arduino.cc";
+char server[] = "http://jsonplaceholder.typicode.com/posts";
 char pathdata[] = "weight/";
 char pathlevel[] = "level/";
 
@@ -57,9 +59,17 @@ char pathlevel[] = "level/";
  EthernetClient      client;
 EthernetHttpClient  httpClient(client, server, 8080);
 
+//////////////////////PROTOTYPE/////////////////////////////
+//bool onDecode(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t* bitmap)
+//{
+//  tft.draw16bitRGBBitmap(x, y, bitmap, w, h);
+// 
+//  return 1;
+//}
+ 
 void setup()
 {
-
+  
   Serial.begin(115200);
   while (!Serial);
   
@@ -227,7 +237,7 @@ void setup()
   
 
   SPI.begin(sclk , miso, mosi); // init SPI bus
-  
+
   rfid.PCD_Init(); // init MFRC522
   init_sys();
   camera_init();
@@ -236,6 +246,7 @@ void setup()
 }
 
 int apicall(String Data){
+    
 
   
    httpClient.get("/"+ Data);
@@ -288,9 +299,42 @@ void printoutData()
 
 
 void loop()
-{
- 
-   
+{ 
+  
+   if(!pcf.readButton(set)) 
+   {
+     go_on = 1;
+    Serial.println("Set Button Pressed");
+   }
+   if(!pcf.readButton(up)) Serial.println("up Button Pressed");
+   if(!pcf.readButton(left)) Serial.println("left Button Pressed");
+   if(!pcf.readButton(down)) Serial.println("down Button Pressed");
+   if(!pcf.readButton(right)) Serial.println("right Button Pressed");
+   if(!pcf.readButton(ok)) Serial.println("ok Button Pressed");
+
+   if(go_on == 1){
+
+    //take a picture
+       if(take_pic()) Serial.println("Picture Take Successful");
+    //read rfid tag
+      long current_time = millis(); //get current time
+      do{
+        if(readrfid()) //call readrfid if its read then
+          {//if a read occurs then break from the loop
+              Serial.print("Your Tag ID: ");
+              Serial.println(String(tagdata));
+              break;
+          }
+      }while((current_time-millis() < 30000)); //if the set button is pressed read the rfid or wait to read for 30seconds
+      
+      //send both data via an API.
+      //display picture on the screen
+      tft.fillScreen(ILI9341_BLACK); //CLEAR SCREEN
+      
+//          TJpgDec.setCallback(onDecode);
+//          TJpgDec.drawFsJpg(0, 0, spiffsFilename);
+
+    } 
   
 }
 

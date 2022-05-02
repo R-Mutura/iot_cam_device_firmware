@@ -153,7 +153,7 @@ int brightLEDbrightness = 0;
 bool flashRequired = 0;
 
 
-void take_pic()
+bool take_pic()
 {
    int currentBrightness = brightLEDbrightness;
    // if (flashRequired) brightLed(255);   // change LED brightness (0 - 255)
@@ -161,7 +161,7 @@ void take_pic()
  camera_fb_t *fb = esp_camera_fb_get();  
   if(!fb) {
     Serial.println("Camera capture failed");
-    return;
+    return 0;
   }
        EEPROM.begin(EEPROM_SIZE); //initialize prom size
        pictureNumber = EEPROM.read(0) + 1; //save the number of pictures taken in eeprom
@@ -198,5 +198,6 @@ void take_pic()
        file.close();
 
         esp_camera_fb_return(fb);   //release buffer memory
-        
+
+        return 1;
 }

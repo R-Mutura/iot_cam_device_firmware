@@ -64,11 +64,9 @@ void init_sys()
 //     pcf.pinMode(right, INPUT);
 //     pcf.pinMode(ok,    INPUT);
 //     pcf.pinMode(set,   INPUT);
-        pcf.readButton(set);
+        
      tft.fillScreen(ILI9341_BLACK); //CLEAR SCREEN
   }
-
-  void pcf_read(int x){
     
-       Wire.requestFrom(pcf_addr, 1);
-  }
+    
+  
